@@ -7,8 +7,7 @@ describe('TransactionPool', () => {
   beforeEach(() => {
     tp = new TransactionPool();
     wallet = new Wallet();
-    transaction = Transaction.newTransaction(wallet, 'rec134nt', 30);
-    tp.updateOrAddTransaction(transaction);
+    transaction = wallet.createTransaction('rec134nt', 30, tp);
   });
   it('trading register addition test', () => {
     expect(tp.transactions.find(t => t.id === transaction.id)).toEqual(transaction);
@@ -19,5 +18,28 @@ describe('TransactionPool', () => {
     tp.updateOrAddTransaction(newTransaction);
     expect(JSON.stringify(tp.transactions.find(t => t.id === newTransaction.id)))
       .not.toEqual(oldTransaction);
+  });
+
+  describe('normal / irregularity', () => {
+    let validTransactions;
+    beforeEach( () => {
+      validTransactions = [...tp.transactions];
+      for(let i = 0; i < 6; i++) {
+        wallet = new Wallet();
+        transaction = wallet.createTransaction('rec134nt', 30, tp);
+        if(i%2 === 0) {
+          transaction.input.amount = 9999;
+        } else {
+          validTransactions.push(transaction);
+        }
+      }
+    });
+
+    it('trading register and transaction validation list test', () => {
+      expect(JSON.stringify(tp.transactions)).not.toEqual(JSON.stringify(validTransactions));
+    })
+    it('transaction validation list test', () => {
+      expect(tp.validTransactions()).toEqual(validTransactions);
+    });
   });
 });
