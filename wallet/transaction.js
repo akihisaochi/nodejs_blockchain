@@ -1,4 +1,5 @@
 const ChainUtil = require('../chain-util');
+const { MINING_REWARD } = require('../config');
 
 class Transaction {
   constructor() {
@@ -27,16 +28,25 @@ class Transaction {
       return;
     }
 
-    const transaction = new this();
-    transaction.outputs.push(...[
+    return Transaction.transactionWithOutputs(senderWallet,[
       { amount: senderWallet.balance - amount, address: senderWallet.publicKey },
       { amount, address: receipient }
     ]);
+  }
 
-    this.signTransaction(transaction, senderWallet);
+  static rewardTransaction(minerWallet, blockchainWallet) {
+    return Transaction.transactionWithOutputs(blockchainWallet, [
+      {amount: MINING_REWARD, adress: minerWallet.publicKey}
+    ]);
+  }
 
+  static transactionWithOutputs(senderWallet, outputs) {
+    const transaction = new this();
+    transaction.outputs.push(...outputs);
+    Transaction.signTransaction(transaction, senderWallet);
     return transaction;
   }
+
   static signTransaction(transaction, senderWallet) {
     transaction.input = {
       timestamp: Date.now(),
@@ -45,6 +55,7 @@ class Transaction {
       signature: senderWallet.sign(ChainUtil.hash(transaction.outputs))
     };
   }
+
   static verifyTransaction(transaction) {
     return ChainUtil.verifySignature(
       transaction.input.address,
@@ -52,6 +63,7 @@ class Transaction {
       ChainUtil.hash(transaction.outputs)
     );
   }
+
 }
 
 module.exports = Transaction;
