@@ -1,11 +1,13 @@
 const Wallet = require('./index');
 const TransactionPool = require('./transaction-pool');
+const Blockchain = require('../blockchain');
 
 describe('Wallet', () => {
-  let wallet, tp;
+  let wallet, tp, blockchain;
   beforeEach( () => {
     wallet = new Wallet();
     tp = new TransactionPool();
+    blockchain = new Blockchain();
   });
 
   describe('trade create test', () => {
@@ -13,11 +15,11 @@ describe('Wallet', () => {
     beforeEach(() => {
       sendAmount = 50;
       recipient = 'r39310-3ndrs';
-      transaction = wallet.createTransaction(recipient, sendAmount, tp);
+      transaction = wallet.createTransaction(recipient, sendAmount, blockchain, tp);
     });
     describe('Identical transaction generation test', () => {
       beforeEach(() => {
-        wallet.createTransaction(recipient, sendAmount, tp);
+        wallet.createTransaction(recipient, sendAmount, blockchain, tp);
       });
       it('It is doubled from the balance', () => {
         expect(transaction.outputs.find(output => output.address === wallet.publicKey).amount)

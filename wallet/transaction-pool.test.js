@@ -1,13 +1,15 @@
 const TransactionPool = require('./transaction-pool');
 const Transaction = require('./transaction');
 const Wallet = require('./index');
+const Blockchain = require('../blockchain');
 
 describe('TransactionPool', () => {
-  let tp, transaction, wallet;
+  let tp, transaction, wallet, blockchain;
   beforeEach(() => {
     tp = new TransactionPool();
     wallet = new Wallet();
-    transaction = wallet.createTransaction('rec134nt', 30, tp);
+    blockchain = new Blockchain();
+    transaction = wallet.createTransaction('rec134nt', 30, blockchain, tp);
   });
   it('trading register addition test', () => {
     expect(tp.transactions.find(t => t.id === transaction.id)).toEqual(transaction);
@@ -26,7 +28,7 @@ describe('TransactionPool', () => {
       validTransactions = [...tp.transactions];
       for(let i = 0; i < 6; i++) {
         wallet = new Wallet();
-        transaction = wallet.createTransaction('rec134nt', 30, tp);
+        transaction = wallet.createTransaction('rec134nt', 30, blockchain, tp);
         if(i%2 === 0) {
           transaction.input.amount = 9999;
         } else {
@@ -41,5 +43,10 @@ describe('TransactionPool', () => {
     it('transaction validation list test', () => {
       expect(tp.validTransactions()).toEqual(validTransactions);
     });
+  });
+
+  it('transaction clear', () => {
+    tp.clear();
+    expect(tp.transactions).toEqual([]);
   });
 });
